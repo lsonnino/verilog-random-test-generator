@@ -94,3 +94,55 @@ def ntsf(words):
             new_words.append(d)
 
     return new_words
+
+def always_different(words, retries=10):
+    """
+    Re-order words so that the starting letter of the last element of each word has a different starting letter than the first element of the next word.
+    """
+
+    # If each word only contains one element, result will be the same as ntsf (which is faster)
+    if type(words[0]) != type([]):
+        return ntsf(words)
+
+    # Extract main parameters
+    n = len(words)
+
+    # Prepare for re-ordering
+    new_words = []
+    new_words.append(words[0])
+    done = [False] * n
+    done[0] = True
+    placed = 1
+
+    # Place words in the new list
+    for _ in range(retries):
+        for i in range(1, n):
+            if done[i]:
+                continue
+
+            for j in range(placed):
+                if (new_words[j][-1][0] != words[i][0][0]) and (new_words[j+1][0][0] != words[i][-1][0] if j+1 < len(new_words) else True):
+                    new_words.insert(j+1, words[i])
+                    done[i] = True
+                    placed += 1
+                    break
+    
+        # Check if it's already done
+        if placed == n:
+            return new_words
+    
+    # Place the remaining words
+    print(f'Warning: Could not reorder {n - placed} words in the list. Some words at the end will not meet the reordering condition')
+    for i in range(1, n):
+        if not done[i]:
+            new_words.append(words[i])
+
+    return new_words
+
+if __name__ == '__main__':
+    # Test the algorithms
+    words = [['000', '100'], ['100', '200'], ['200', '300'], ['300', '000'], ['100', '000'], ['300', '200'], ['200', '100'], ['000', '300'], ['200', '000'], ['300', '100'], ['000', '200'], ['100', '300']]
+    print('Original:', words)
+    #print('Inverse:', inverse(words))
+    #print('NTSF:', ntsf(words))
+    print('Always Different:', always_different(words))

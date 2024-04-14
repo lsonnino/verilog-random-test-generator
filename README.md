@@ -107,6 +107,17 @@ The order in which the random numbers are fed can be customised depending on som
 
 * **inverse**: reverse the order of the list
 * **ntsf**: (stands for "never twice the same first"). It tries as much as possible to avoid generating two sets of numbers whose first character of the first number is the same. Hence the numbers ['011', 'abc'], ['011', 'abc'], ['111', 'abc'] will become ['011', 'abc'], ['111', 'abc'], ['011', 'abc']. Hence the first number of each set ('011', '011', '111') will always have a different first char (['0', '0', '1'] becomes '0', '1', '0')
+* **always_different**: re-order words so that the starting letter of the last element of each word has a different starting letter than the first element of the next word. Gence, the word ['000', '111'] cannot be followed by ['100', '211'] because '111' and '100' both start with '1'
+
+
+
+### Filtering
+
+Words can be filtered so that they meet certain conditions:
+
+* **dffe**: (stands for "Different First of First Element"). Takes the length of the first element of the word. Then takes all the other elements of the same size. The first letter of those elements must be different
+
+Note that the number of generated words will be the same regardless of the filter. The filter only ensures that all of those words are generated following a given condition.
 
 
 
@@ -119,35 +130,36 @@ Here is a JSON example:
     "export_dc": true,
     "tcl_template": "tcl_template.tcl",
     "auto_run": {
-        "src_folder": "../../../verilog_code/",
-        "files": "inspec.sv queue.sv switch.sv RAM_Array.sv bank.sv",
+        "src_folder": "verilog_code/",
+        "files": "uut.sv sub_module.sv",
         "args": "-g2012",
         "vcd": "waveform.vcd"
     },
     "generate": [
         {
-            "name": "noop",
+            "name": "mytest",
             "n": 1000,
             "lengths": [10, 32],
             "from_bits": true,
-            "output_folder": "../tests_gen/output/",
+            "output_folder": "example/output/",
             "order": "ntsf",
+          	"filter": "dffe",
             "test": [
                 {
-                    "output": "bank.v",
-                    "template": "../tests_gen/template_bank_noop.v",
+                    "output": "first.v",
+                    "template": "example/template_first_mytest.v",
                     "inter_template": null,
-                    "prefix": "../tests_gen/bank_pre.v",
-                    "suffix": "../tests_gen/bank_post.v",
-                    "module": "bank"
+                    "prefix": "example/first_pre.v",
+                    "suffix": "example/first_post.v",
+                    "module": "first"
                 },
                 {
-                    "output": "inspec.v",
-                    "template": ["../tests_gen/template_inspec_noop_1.v", "../tests_gen/template_inspec_noop_2.v"],
-                    "inter_template": "../tests_gen/template_inspec_noop_inter.v",
-                    "prefix": "../tests_gen/inspec_pre.v",
-                    "suffix": "../tests_gen/inspec_post.v",
-                    "module": "inspec"
+                    "output": "second.v",
+                    "template": ["example/template_second_mytest_1.v", "example/template_second_mytest_2.v"],
+                    "inter_template": "example/template_second_inter.v",
+                    "prefix": "example/second_pre.v",
+                    "suffix": "example/second_post.v",
+                    "module": "second"
                 }
             ]
         }
@@ -171,6 +183,7 @@ The JSON uses the following parameters:
   * **from_bits** [optional, defaults to false]: if true, the number lengths specified in *lengths* are interpreted as the number of bits
   * **output_folder**: where to export
   * **order** [optional, defaults to None]: change the order of the generated words
+  * **filter** [optional, defaults to None]: ensures all words meet a given condition
   * **tests**: a list of tests to generate. They each share the same generated numbers
     * **output**: the name of the output file for the test
     * **template**: either the path to the template, or an array of paths to different templates
@@ -183,37 +196,37 @@ The JSON uses the following parameters:
 
 This example file hence generates all the files for a DC simulation. It generates 1000 times one 10 and one 32 bits number (2000 numbers in total). It has two tests hence generates two testbenches, with those same 2000 numbers:
 
-../tests_gen/output/noop_bank.v:
+example/output/mytest_first.v:
 
 ```verilog
-// Content of {../tests_gen/bank_pre.v}
+// Content of {example/first_pre.v}
 /*
-	1000 times, content of {../tests_gen/template_bank_noop.v}
+	1000 times, content of {example/template_first_mytest.v}
 	Each time, with different values for $1 and $2.
 		$1 is 10 bits long (3 hexadecimal characters, first one from 0 to 3)
 		$2 is 32 bits long (8 hexadecimal characters)
  */
-// Content of {../tests_gen/bank_post.v}
+// Content of {example/first_post.v}
 ```
 
-../tests_gen/output/noop_inspec.v:
+example/output/mytest_second.v:
 
 ```verilog
-// Content of {../tests_gen/inspec_pre.v}
+// Content of {example/second_pre.v}
 /*
-	1000 times, content of {../tests_gen/template_inspec_noop_1.v}
+	1000 times, content of {example/template_second_mytest_1.v}
 	Each time, with different values for $1 and $2.
 		$1 is 10 bits long (3 hexadecimal characters, first one from 0 to 3)
 		$2 is 32 bits long (8 hexadecimal characters)
  */
-// Content of {../tests_gen/template_inspec_noop_inter.v}
+// Content of {example/template_second_inter.v}
 /*
-	1000 times, content of {../tests_gen/template_inspec_noop_2.v}
+	1000 times, content of {example/template_second_mytest_2.v}
 	Each time, with different values for $1 and $2.
 		$1 is 10 bits long (3 hexadecimal characters, first one from 0 to 3)
 		$2 is 32 bits long (8 hexadecimal characters)
  */
-// Content of {../tests_gen/inspec_post.v}
+// Content of {example/second_post.v}
 ```
 
 The exact same 2000 numbers are used throughout these two files.

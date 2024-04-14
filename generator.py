@@ -1,5 +1,6 @@
 from gen_words import gen_words, bits_to_len
 import ordering
+import filtering
 import json, os
 
 def parse(template, args):
@@ -23,11 +24,21 @@ def write_template(f, words, template='template.v'):
     for w in words:
         f.write(parse(template_txt, w) + '\n')
 def write_prefix(f, prefix='prefix.txt'):
-    with open(prefix, 'r') as prefix:
-        f.write(prefix.read())
+    if type(prefix) == type([]):
+        for p in prefix:
+            with open(p, 'r') as txt:
+                f.write(txt.read())
+    else:
+        with open(prefix, 'r') as txt:
+            f.write(txt.read())
 def write_suffix(f, suffix='suffix.txt'):
-    with open(suffix, 'r') as suffix:
-        f.write(suffix.read())
+    if type(suffix) == type([]):
+        for s in suffix:
+            with open(s, 'r') as txt:
+                f.write(txt.read())
+    else:
+        with open(suffix, 'r') as txt:
+            f.write(txt.read())
 
 def generate(words, output, template, inter_template=None, prefix='prefix.v', suffix='suffix.v', from_bits=False):
     # Open output file
@@ -134,6 +145,7 @@ def generate_from_json(test_file, RUN_TEST_SH='run_test.sh'):
         from_bits = generator.get('from_bits', False)
         output_folder = generator.get('output_folder', './')
         order_str = generator.get('order', None)
+        filter_str = generator.get('filter', None)
 
         print()
         print("=====================")
@@ -160,20 +172,33 @@ def generate_from_json(test_file, RUN_TEST_SH='run_test.sh'):
         if order_str is not None:
             if order_str == 'inverse':
                 order = ordering.inverse
-            if order_str == 'ntsf':
+            elif order_str == 'ntsf':
                 order = ordering.ntsf
+            elif order_str == 'always_different':
+                order = ordering.always_different
             else:
                 print(f'Warning: Unknown order {order_str}. Ignoring.')
                 order = None
         else:
             order = None
+        
+        if filter_str is not None:
+            if filter_str == 'pass_all':
+                filter = filtering.pass_all
+            elif filter_str == 'dffe':
+                filter = filtering.dffe
+            else:
+                print(f'Warning: Unknown filter {filter_str}. Ignoring.')
+                filter = None
+        else:
+            filter = None
 
         # Generate words
         if from_bits:
             lengths, first_custom_alphabet = bits_to_len(lengths)
-            words = gen_words(n, lengths, out=None, first_custom_alphabet=first_custom_alphabet)
+            words = gen_words(n, lengths, out=None, first_custom_alphabet=first_custom_alphabet, filter=filter)
         else:
-            words = gen_words(n, lengths, out=None)
+            words = gen_words(n, lengths, out=None, filter=filter)
         
         if order is not None:
             words = order(words)

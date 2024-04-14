@@ -40,10 +40,20 @@ def bits_to_len(bits, alphabet=alphabet):
     
     return lengths, fca
 
-def gen_words(n, lengths, out, alphabet=alphabet, first_custom_alphabet=None):
+def gen_words(n, lengths, out, alphabet=alphabet, first_custom_alphabet=None, filter=None, filter_retries=100):
     output = []
     for _ in range(n):
-        w = gen_one(lengths, alphabet, first_custom_alphabet=first_custom_alphabet)
+        if filter is not None:
+            for fr in range(filter_retries+1):
+                w = gen_one(lengths, alphabet, first_custom_alphabet=first_custom_alphabet)
+                if filter(w):
+                    break
+                else:
+                    continue
+            if fr == filter_retries:
+                print('Warning: Filter validation failed after {} retries'.format(filter_retries))
+        else:
+            w = gen_one(lengths, alphabet, first_custom_alphabet=first_custom_alphabet)
         output.append(w)
 
     if out is not None:
