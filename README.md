@@ -178,6 +178,7 @@ The JSON uses the following parameters:
   * **vcd**: name of the exported `.vcd` file. This should match the one in the prefix or suffix file, used to generate the testbench
 * **generate**: an array of generators
   * **name**: name of the generator. Should be unique amongst generators
+  * **enable** [optional, defaults to true]: if false, the generator is skipped
   * **n**: the number of times the template should be repeated. In other words, the number of times numbers need to be generated
   * **lengths**: the length of each number that should be generated. This is either the number of bits, or the number of hexadecimal characters the numbers should be (depending on the *from_bits* parameter)
   * **from_bits** [optional, defaults to false]: if true, the number lengths specified in *lengths* are interpreted as the number of bits
@@ -186,6 +187,7 @@ The JSON uses the following parameters:
   * **filter** [optional, defaults to None]: ensures all words meet a given condition
   * **tests**: a list of tests to generate. They each share the same generated numbers
     * **output**: the name of the output file for the test
+    * **enable** [optional, defaults to true]: if false, the test is skipped
     * **template**: either the path to the template, or an array of paths to different templates
     * **inter_template** [optional, defaults to null]: path to the code to put between the templates. Unused if there is only one template
     * **prefix**: path to the prefix file

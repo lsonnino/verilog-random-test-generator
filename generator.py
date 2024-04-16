@@ -139,6 +139,7 @@ def generate_from_json(test_file, RUN_TEST_SH='run_test.sh'):
     for generator in generators:
         # get commoon parameters
         name = generator.get('name', '')
+        gen_enable = generator.get('enable', True)
         tests = generator.get('test', [])
         n = generator.get('n', 1)
         lengths = generator.get('lengths', [])
@@ -146,6 +147,10 @@ def generate_from_json(test_file, RUN_TEST_SH='run_test.sh'):
         output_folder = generator.get('output_folder', './')
         order_str = generator.get('order', None)
         filter_str = generator.get('filter', None)
+
+        if not gen_enable:
+            print(f" > Generator {name} is disabled.")
+            continue
 
         print()
         print("=====================")
@@ -210,6 +215,7 @@ def generate_from_json(test_file, RUN_TEST_SH='run_test.sh'):
         for t in tests:
             output_filename = name + '_' + t.get('output', 'testbench.v')
             output = output_folder + output_filename
+            enable = t.get('enable', True)
             template = t.get('template', 'template.v')
             inter_template = t.get('inter_template', None)
             prefix = t.get('prefix', 'prefix.v')
@@ -222,7 +228,11 @@ def generate_from_json(test_file, RUN_TEST_SH='run_test.sh'):
             elif output_filename[-2:] == '.sv':
                 output_filename_no_ext = output_filename[:-3]
             
-            print(f" > Test: {output_filename_no_ext}")
+            if not enable:
+                print(f" > Test {output_filename_no_ext} is disabled.")
+                continue
+            else:
+                print(f" > Test: {output_filename_no_ext}")
 
             # Generate testbench
             generate(words, output, template, inter_template, prefix, suffix, from_bits)
