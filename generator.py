@@ -218,6 +218,8 @@ def generate_from_json(test_file, RUN_TEST_SH='run_test.sh'):
                     order = get_order(o)
                     if order is not None:
                         words[i] = order(generated_words)
+                    else:
+                        words[i] = generated_words
             else:
                 multiple_words = False
 
