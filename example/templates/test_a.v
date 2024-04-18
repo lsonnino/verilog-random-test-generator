@@ -1,0 +1,1 @@
+        @(posedge clk); in1 = 12'h$1; in2 = 20'hzzzzz;

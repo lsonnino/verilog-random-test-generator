@@ -40,7 +40,7 @@ def write_suffix(f, suffix='suffix.txt'):
         with open(suffix, 'r') as txt:
             f.write(txt.read())
 
-def generate(words, output, template, inter_template=None, prefix='prefix.v', suffix='suffix.v', from_bits=False):
+def generate(words, output, template, inter_template=None, prefix='prefix.v', suffix='suffix.v', multiple_words=False):
     # Open output file
     f = open(output, 'w')
 
@@ -56,14 +56,16 @@ def generate(words, output, template, inter_template=None, prefix='prefix.v', su
 
     if type(template) == type([]):
         for i, t in enumerate(template):
+            use_words = words[i if i < len(words) else -1] if multiple_words else words
+
             f.write('\n')
-            write_template(f, words, t)
+            write_template(f, use_words, t)
 
             if i < len(template) - 1:
                 f.write('\n')
-                f.write(parse(inter_template_txt, words[0]))
+                f.write(parse(inter_template_txt, use_words[0]))
     else:
-        write_template(f, words, template)
+        write_template(f, words[0] if multiple_words else words, template)
 
     # Write suffix
     f.write('\n')
@@ -120,6 +122,20 @@ def export_to_dc(output_folder, output_filename_no_ext, name, tcl_template, top_
         f.write(f'vcd2saif -input {output_filename_no_ext}.vcd -output {output_filename_no_ext}.saif\n')
         f.write(f'dc_shell -f {output_filename_no_ext}.tcl\n')
 
+def get_order(order_str):
+    if order_str is not None:
+        if order_str == 'inverse':
+            return ordering.inverse
+        elif order_str == 'ntsf':
+            return ordering.ntsf
+        elif order_str == 'always_different':
+            return ordering.always_different
+        else:
+            print(f'Warning: Unknown order {order_str}. Ignoring.')
+            return None
+    else:
+        return None
+
 def generate_from_json(test_file, RUN_TEST_SH='run_test.sh'):
     with open(test_file, 'r') as f:
         data = json.load(f)
@@ -174,19 +190,6 @@ def generate_from_json(test_file, RUN_TEST_SH='run_test.sh'):
         if output_folder[-1] != '/':
             output_folder += '/'
         
-        if order_str is not None:
-            if order_str == 'inverse':
-                order = ordering.inverse
-            elif order_str == 'ntsf':
-                order = ordering.ntsf
-            elif order_str == 'always_different':
-                order = ordering.always_different
-            else:
-                print(f'Warning: Unknown order {order_str}. Ignoring.')
-                order = None
-        else:
-            order = None
-        
         if filter_str is not None:
             if filter_str == 'pass_all':
                 filter = filtering.pass_all
@@ -201,12 +204,31 @@ def generate_from_json(test_file, RUN_TEST_SH='run_test.sh'):
         # Generate words
         if from_bits:
             lengths, first_custom_alphabet = bits_to_len(lengths)
-            words = gen_words(n, lengths, out=None, first_custom_alphabet=first_custom_alphabet, filter=filter)
+            generated_words = gen_words(n, lengths, out=None, first_custom_alphabet=first_custom_alphabet, filter=filter)
         else:
-            words = gen_words(n, lengths, out=None, filter=filter)
+            generated_words = gen_words(n, lengths, out=None, filter=filter)
         
-        if order is not None:
-            words = order(words)
+        # Order words
+        if order_str is not None:
+            if type(order_str) == type([]):
+                multiple_words = True
+                words = [None] * len(order_str)
+
+                for i, o in enumerate(order_str):
+                    order = get_order(o)
+                    if order is not None:
+                        words[i] = order(generated_words)
+            else:
+                multiple_words = False
+
+                order = get_order(order_str)
+                if order is not None:
+                    words = order(generated_words)
+                else:
+                    words = generated_words
+        else:
+            multiple_words = False
+            words = generated_words
         
         # Generate tests
         os.system(f'mkdir -p {output_folder}')
@@ -235,7 +257,7 @@ def generate_from_json(test_file, RUN_TEST_SH='run_test.sh'):
                 print(f" > Test: {output_filename_no_ext}")
 
             # Generate testbench
-            generate(words, output, template, inter_template, prefix, suffix, from_bits)
+            generate(words, output, template, inter_template, prefix, suffix, multiple_words)
 
             # Run simulation and export for Design Compiler
             if runner is not None:

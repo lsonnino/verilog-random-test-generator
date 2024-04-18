@@ -105,9 +105,12 @@ Some code can be put between the first and second template. That code cannot use
 
 The order in which the random numbers are fed can be customised depending on some simple rules, through the `order` entry. Currently, the following rules are implemented:
 
+* **null**: no particular re-ordering
 * **inverse**: reverse the order of the list
 * **ntsf**: (stands for "never twice the same first"). It tries as much as possible to avoid generating two sets of numbers whose first character of the first number is the same. Hence the numbers ['011', 'abc'], ['011', 'abc'], ['111', 'abc'] will become ['011', 'abc'], ['111', 'abc'], ['011', 'abc']. Hence the first number of each set ('011', '011', '111') will always have a different first char (['0', '0', '1'] becomes '0', '1', '0')
 * **always_different**: re-order words so that the starting letter of the last element of each word has a different starting letter than the first element of the next word. Gence, the word ['000', '111'] cannot be followed by ['100', '211'] because '111' and '100' both start with '1'
+
+Ordering can also be an array where each element is one of the entry here-above. In which case, the first template will be ordered according to the first entry of the array, the second template according to the second and so on. If the re-ordering array is smaller than the number of templates, the last few templates are re-ordered according to the last order. So if the order is `["ntsf", "always_different"]` and template is `["template1.v", "template2.v", "template3.v"]` then `"template1.v"` uses `"ntsf"` while the other two templates use `"always_different"`.
 
 
 
@@ -115,6 +118,7 @@ The order in which the random numbers are fed can be customised depending on som
 
 Words can be filtered so that they meet certain conditions:
 
+* **null**: no particular filtering
 * **dffe**: (stands for "Different First of First Element"). Takes the length of the first element of the word. Then takes all the other elements of the same size. The first letter of those elements must be different
 
 Note that the number of generated words will be the same regardless of the filter. The filter only ensures that all of those words are generated following a given condition.

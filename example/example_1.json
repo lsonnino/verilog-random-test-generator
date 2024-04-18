@@ -1,0 +1,55 @@
+{
+    "export_dc": false,
+    "generate": [
+        {
+            "name": "gen1",
+            "enable": true,
+            "n": 10,
+            "lengths": [3, 5],
+            "from_bits": false,
+            "output_folder": "example/output/",
+            "test": [
+                {
+                    "output": "test1.v",
+                    "template": "example/templates/test_b.v",
+                    "inter_template": null,
+                    "prefix":  "example/templates/test1_pre.v",
+                    "suffix": "example/templates/test_post.v"
+                },
+                {
+                    "output": "test2.v",
+                    "template": "example/templates/test_b.v",
+                    "inter_template": null,
+                    "prefix":  "example/templates/test2_pre.v",
+                    "suffix": "example/templates/test_post.v"
+                }
+            ]
+        },
+
+        {
+            "name": "gen2",
+            "enable": true,
+            "n": 10,
+            "lengths": [3, 5],
+            "from_bits": false,
+            "output_folder": "example/output/",
+            "order": ["ntsf", "always_different"],
+            "test": [
+                {
+                    "output": "test1.v",
+                    "template": ["example/templates/test_a.v", "example/templates/test_b.v"],
+                    "inter_template": null,
+                    "prefix":  "example/templates/test1_pre.v",
+                    "suffix": "example/templates/test_post.v"
+                },
+                {
+                    "output": "test2.v",
+                    "template":["example/templates/test_a.v", "example/templates/test_b.v"],
+                    "inter_template": null,
+                    "prefix":  "example/templates/test2_pre.v",
+                    "suffix": "example/templates/test_post.v"
+                }
+            ]
+        }
+    ]
+}
