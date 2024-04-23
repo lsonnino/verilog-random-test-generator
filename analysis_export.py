@@ -90,7 +90,7 @@ def export_to_md(splits, energy, times, areas, compare_dict, export, output=None
 
             for i, k in enumerate(export):
                 v = round(energy[num_index][k.lower()] / energy[denum_index][k.lower()] * 100, 2)
-                lines[compare_start_index+2+i] += f'{v}%' + ' | '
+                lines[compare_start_index+2+i] += f'{v}%'.center(max(8, len(f'{c}/{cci}'))) + ' | '
 
     # Write all lines to file
     if output is None:
