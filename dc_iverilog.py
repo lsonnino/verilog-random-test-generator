@@ -1,3 +1,4 @@
+import os
 
 def run(runner, testbench, name, output_folder, output_filename_no_ext, RUN_ENV='run_env'):
     # Parse arguments
